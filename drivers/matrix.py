@@ -24,11 +24,14 @@ from mautrix.types import (
     EventType,
     FileInfo,
     ImageInfo,
+    InReplyTo,
     LoginType,
     MatrixUserIdentifier,
     MediaMessageEventContent,
     MessageEvent,
     MessageType,
+    RelatesTo,
+    RoomID,
     TextMessageEventContent,
     UserID,
     VideoInfo,
@@ -314,14 +317,16 @@ class MatrixDriver(BaseDriver[MatrixConfig]):
             is_html = True
 
         if text.strip():
+            relates_obj = RelatesTo(in_reply_to=InReplyTo(
+                event_id=reply_to_event_id)) if reply_to_event_id else None
             try:
                 if is_html:
                     await self._client.send_text(
-                        room_id, text, html=html_text, reply_to=reply_to_event_id
+                        room_id, text, html=html_text, relates_to=relates_obj
                     )
                 else:
                     await self._client.send_text(
-                        room_id, text, reply_to=reply_to_event_id
+                        room_id, text, relates_to=relates_obj
                     )
             except Exception as e:
                 logger.error(
@@ -335,7 +340,7 @@ class MatrixDriver(BaseDriver[MatrixConfig]):
             if not result:
                 label = att.name or att.url or ""
                 await self._send_fallback(
-                    room_id, f"[{att.type.capitalize()}: {label}]", reply_to_event_id
+                    room_id, f"[{att.type.capitalize()}: {label}]", relates_obj
                 )
                 continue
 
@@ -353,7 +358,7 @@ class MatrixDriver(BaseDriver[MatrixConfig]):
                 logger.error(f"Matrix [{self.instance_id}] upload failed: {e}")
                 label = att.name or att.url or fname
                 await self._send_fallback(
-                    room_id, f"[{att.type.capitalize()}: {label}]", reply_to_event_id
+                    room_id, f"[{att.type.capitalize()}: {label}]", relates_obj
                 )
                 continue
 
@@ -364,19 +369,19 @@ class MatrixDriver(BaseDriver[MatrixConfig]):
                     info=_make_info(att.type, mime, len(data_bytes)),
                     file_name=fname,
                     file_type=_FILE_TYPES.get(att.type, MessageType.FILE),
-                    reply_to=reply_to_event_id,
+                    relates_to=relates_obj,
                 )
             except Exception as e:
                 logger.error(
                     f"Matrix [{self.instance_id}] send media failed: {e}")
 
     async def _send_fallback(
-        self, room_id: str, body: str, reply_to_event_id=None
+        self, room_id: str, body: str, relates_obj: RelatesTo | None = None
     ) -> None:
         if self._client is None:
             return
         try:
-            await self._client.send_text(room_id, body, reply_to=reply_to_event_id)
+            await self._client.send_text(room_id, body, relates_to=relates_obj)
         except Exception as e:
             logger.error(
                 f"Matrix [{self.instance_id}] fallback send failed: {e}")
