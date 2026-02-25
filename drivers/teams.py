@@ -260,14 +260,14 @@ class TeamsDriver(BaseDriver[TeamsConfig]):
 
         # Send text first
         if text.strip():
-            activity = {
+            activity: dict = {
                 "type": "message",
                 "text": text,
             }
             if reply_to_id:
                 activity["replyToId"] = reply_to_id
             if entities:
-                activity["entities"] = entities
+                activity["entities"] = entities  # type: ignore
             await self._post_activity(url, headers, activity)
 
         # Send attachments
@@ -329,6 +329,7 @@ class TeamsDriver(BaseDriver[TeamsConfig]):
                 await self._post_activity(url, headers, act)
 
     async def _post_activity(self, url: str, headers: dict, body: dict) -> None:
+        assert self._session is not None  # Type narrowing - session is set in start()
         try:
             async with self._session.post(url, json=body, headers=headers) as resp:
                 if resp.status not in (200, 201):
