@@ -52,7 +52,8 @@ class KookDriver(BaseDriver[KookConfig]):
 
         # Register our handler alongside khl's internal command-manager handler.
         # khl's Client dispatches to all registered handlers for a given type.
-        async def on_msg(msg: khl.Message):
+        async def on_msg(msg: khl.Message | khl.Event):
+            # Filter to only handle Message types (not Event types)
             if not isinstance(msg, khl.PublicMessage):
                 return
             await self._on_message(msg)
