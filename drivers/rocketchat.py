@@ -355,6 +355,7 @@ class RocketChatDriver(BaseDriver[RocketChatConfig]):
         avatar: str = "",
         reply_to_id: str | None = None,
     ) -> None:
+        assert self._session is not None  # Type narrowing - session is set in start()
         payload: dict = {"roomId": room_id, "text": text}
         if reply_to_id:
             payload["tmid"] = reply_to_id
@@ -386,6 +387,7 @@ class RocketChatDriver(BaseDriver[RocketChatConfig]):
         mime: str,
         reply_to_id: str | None = None,
     ) -> None:
+        assert self._session is not None  # Type narrowing - session is set in start()
         form = aiohttp.FormData()
         if reply_to_id:
             form.add_field("tmid", reply_to_id)
@@ -418,6 +420,7 @@ class RocketChatDriver(BaseDriver[RocketChatConfig]):
         icon_url: str,
         reply_to_id: str | None = None,
     ) -> None:
+        assert self._session is not None  # Type narrowing - session is set in start()
 
         # Build RC webhook attachment objects for each media item.
         # Incoming webhooks cannot upload bytes, so we use URL-based rendering
