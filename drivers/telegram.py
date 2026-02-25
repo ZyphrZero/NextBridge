@@ -79,6 +79,7 @@ class TelegramDriver(BaseDriver[TelegramConfig]):
         # async-with handles initialize() / shutdown() automatically
         async with self._app:
             await self._app.start()
+            assert self._app.updater is not None
             await self._app.updater.start_polling(allowed_updates=Update.ALL_TYPES)
             logger.info(f"Telegram [{self.instance_id}] polling started")
             try:
@@ -134,6 +135,7 @@ class TelegramDriver(BaseDriver[TelegramConfig]):
             if msg.photo:
                 largest = max(msg.photo, key=lambda p: p.file_size or 0)
                 f = await largest.get_file()
+                assert f.file_path is not None
                 attachments.append(
                     Attachment(
                         type="image",
@@ -144,6 +146,7 @@ class TelegramDriver(BaseDriver[TelegramConfig]):
                 )
             elif msg.video:
                 f = await msg.video.get_file()
+                assert f.file_path is not None
                 attachments.append(
                     Attachment(
                         type="video",
@@ -154,6 +157,7 @@ class TelegramDriver(BaseDriver[TelegramConfig]):
                 )
             elif msg.voice:
                 f = await msg.voice.get_file()
+                assert f.file_path is not None
                 attachments.append(
                     Attachment(
                         type="voice",
@@ -164,6 +168,7 @@ class TelegramDriver(BaseDriver[TelegramConfig]):
                 )
             elif msg.audio:
                 f = await msg.audio.get_file()
+                assert f.file_path is not None
                 attachments.append(
                     Attachment(
                         type="voice",
@@ -174,6 +179,7 @@ class TelegramDriver(BaseDriver[TelegramConfig]):
                 )
             elif msg.animation:
                 f = await msg.animation.get_file()
+                assert f.file_path is not None
                 attachments.append(
                     Attachment(
                         type="video",
@@ -184,6 +190,7 @@ class TelegramDriver(BaseDriver[TelegramConfig]):
                 )
             elif msg.document:
                 f = await msg.document.get_file()
+                assert f.file_path is not None
                 attachments.append(
                     Attachment(
                         type="file",
